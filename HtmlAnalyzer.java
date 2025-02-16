@@ -9,8 +9,14 @@ public class HtmlAnalyzer {
         List<String> htmlLines = fetcher.fetchHtmlLines(args[0]);
         if (htmlLines == null) {
             System.out.println("Url connection error");
-        } else {
-            System.out.println("Url connection success");
+            return;
+        }
+        HtmlParser parser = new HtmlParser();
+        try {
+            String deepestText = parser.parse(htmlLines);
+            System.out.println(deepestText);
+        } catch (MalformedHtmlException e) {
+            System.out.println("malformed HTML");
         }
 
     }
