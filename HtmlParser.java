@@ -1,7 +1,18 @@
 import java.util.List;
 import java.util.Stack;
 
+/**
+ * The HtmlParser class is responsible for parsing HTML content and extracting the deepest text.
+ */
 public class HtmlParser {
+
+    /**
+     * Parses the given list of HTML lines and extracts the deepest text.
+     *
+     * @param lines the list of HTML lines to parse
+     * @return the deepest text found in the HTML content
+     * @throws MalformedHtmlException if the HTML content is malformed
+     */
 
     public String parse(List<String> lines) throws MalformedHtmlException {
         Stack<String> tagStack = new Stack<>();
