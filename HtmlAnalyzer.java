@@ -1,5 +1,7 @@
 public class HtmlAnalyzer {
     public static void main(String[] args) {
-        System.out.println("Hello, World!");
+        if (args.length != 1) {
+            System.out.println("Usage: java HtmlAnalyzer <url>");
+        }
     }
 }
