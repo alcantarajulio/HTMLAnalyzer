@@ -30,14 +30,14 @@ public class HtmlParser {
                     String tagName = extractTagName(line, true);
                     if (tagStack.isEmpty() || !tagStack.peek().equals(tagName)) {
                         // Tag de fechamento não corresponde à última abertura
-                        throw new MalformedHtmlException("Tag de fechamento não corresponde");
+                        throw new MalformedHtmlException();
                     }
                     tagStack.pop();
                 } else {
                     // Tag de abertura
                     String tagName = extractTagName(line, false);
                     if (tagName.contains(" ")) { // Não permite atributos
-                        throw new MalformedHtmlException("Tag de abertura com atributos");
+                        throw new MalformedHtmlException();
                     }
                     tagStack.push(tagName);
                 }
@@ -53,7 +53,7 @@ public class HtmlParser {
 
         if (!tagStack.isEmpty()) {
             // se restarem tags não fechadas, o HTML está mal-formado
-            throw new MalformedHtmlException("Tags não fechadas");
+            throw new MalformedHtmlException();
         }
 
         return deepestText;
