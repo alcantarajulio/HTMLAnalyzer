@@ -32,7 +32,7 @@ public class HtmlAnalyzer {
             String deepestText = parser.parse(htmlLines);
             System.out.println(deepestText);
         } catch (MalformedHtmlException e) {
-            System.out.println("malformed HTML");
+            System.out.println(e.getMessage());
         }
 
     }
