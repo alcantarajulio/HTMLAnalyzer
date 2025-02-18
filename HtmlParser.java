@@ -22,60 +22,59 @@ public class HtmlParser {
 
         for (String rawLine : lines) {
             String line = rawLine.trim();
-            if (line.isEmpty()) continue; // Ignore blank lines
 
-            if (isTag(line)) {
-                if (isClosingTag(line)) {
-                    String tagName = extractTagName(line, true);
-                    if (tagDeque.isEmpty() || !tagDeque.peek().equals(tagName)) {
-                        // Closing tag does not match the last opening tag
-                        throw new MalformedHtmlException();
-                    }
-                    tagDeque.pop();
-                } else {
-                    // Opening tag
-                    String tagName = extractTagName(line, false);
-                    if (tagName.contains(" ")) { // Do not allow attributes
-                        throw new MalformedHtmlException();
-                    }
-                    tagDeque.push(tagName);
-                }
+            if (line.isEmpty()) continue;
+
+            if (isTag(line)){
+                processTagLine(line, tagDeque);
             } else {
-                // Update if the depth is greater than the current
-                int currentDepth = tagDeque.size();
-                if (currentDepth > maxDepth) {
-                    maxDepth = currentDepth;
-                    deepestText = line;
-                }
+                deepestText = updateDeepestText(line, tagDeque, deepestText, maxDepth);
+                maxDepth = Math.max(maxDepth, tagDeque.size());
             }
         }
+        if(!tagDeque.isEmpty()) throw new MalformedHtmlException();
+        return deepestText;
+    }
 
         if (!tagDeque.isEmpty()) {
             // If there are unclosed tags, the HTML is malformed
             throw new MalformedHtmlException();
         }
 
-        return deepestText;
+    private void processTagLine(String line, Deque<String> tagDeque) throws MalformedHtmlException {
+        if (isClosingTag(line)) processClosingTag(line, tagDeque);
+        else processOpeningTag(line, tagDeque);
     }
 
-    // verifica se a linha é uma tag (abertura ou fechamento)
+    private void processClosingTag(String line, Deque<String> tagDeque) throws MalformedHtmlException {
+        String tagName = extractTagName(line, true);
+        if (tagDeque.isEmpty() || !tagDeque.peek().equals(tagName)) throw new MalformedHtmlException();
+        tagDeque.pop();
+    }
+
+    private void processOpeningTag(String line, Deque<String> tagDeque) throws MalformedHtmlException {
+        String tagName = extractTagName(line, false);
+        if (tagName.contains(" ")) throw new MalformedHtmlException();
+        tagDeque.push(tagName);
+    }
+
+    private String updateDeepestText(String text, Deque<String> tagDeque, String currentDeepestText, int currentMaxDepth) {
+        int currentDepth = tagDeque.size();
+        if (currentDepth > currentMaxDepth) return text;
+        return currentDeepestText;
+    }
+
     private boolean isTag(String line) {
         return line.startsWith("<") && line.endsWith(">");
     }
 
-    // verifica se a linha é uma tag de fechamento
     private boolean isClosingTag(String line) {
         return line.startsWith("</");
     }
 
-    // extrai o nome da tag removendo os delimitadores
     private String extractTagName(String line, boolean closing) {
-        if (closing) {
-            // </div>
-            return line.substring(2, line.length() - 1).trim();
-        } else {
-            // <div>
-            return line.substring(1, line.length() - 1).trim();
-        }
+        return closing
+                ?  line.substring(2, line.length() - 1).trim()
+                :  line.substring(1, line.length() - 1).trim();
     }
 }
