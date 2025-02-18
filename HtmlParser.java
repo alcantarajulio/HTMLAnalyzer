@@ -1,5 +1,6 @@
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
 
 /**
  * The HtmlParser class is responsible for parsing HTML content and extracting the deepest text.
@@ -13,70 +14,60 @@ public class HtmlParser {
      * @return the deepest text found in the HTML content
      * @throws MalformedHtmlException if the HTML content is malformed
      */
-
-    public String parse(List<String> lines) throws MalformedHtmlException {
-        Stack<String> tagStack = new Stack<>();
+    public String getDeepestText(List<String> lines) throws MalformedHtmlException {
+        Deque<String> tagDeque = new LinkedList<>();
         int maxDepth = -1;
         String deepestText = "";
 
         for (String rawLine : lines) {
             String line = rawLine.trim();
-            if (line.isEmpty()) {
-                continue; // Ignora linhas em branco
-            }
+            if (line.isEmpty()) continue;
 
-            if (isTag(line)) {
-                if (isClosingTag(line)) {
-                    String tagName = extractTagName(line, true);
-                    if (tagStack.isEmpty() || !tagStack.peek().equals(tagName)) {
-                        // Tag de fechamento não corresponde à última abertura
-                        throw new MalformedHtmlException();
-                    }
-                    tagStack.pop();
-                } else {
-                    // Tag de abertura
-                    String tagName = extractTagName(line, false);
-                    if (tagName.contains(" ")) { // Não permite atributos
-                        throw new MalformedHtmlException();
-                    }
-                    tagStack.push(tagName);
-                }
+            if (isTag(line)){
+                processTagLine(line, tagDeque);
             } else {
-                // atualiza se a profundidade for maior que a atual
-                int currentDepth = tagStack.size();
-                if (currentDepth > maxDepth) {
-                    maxDepth = currentDepth;
-                    deepestText = line;
-                }
+                deepestText = updateDeepestText(line, tagDeque, deepestText, maxDepth);
+                maxDepth = Math.max(maxDepth, tagDeque.size());
             }
         }
-
-        if (!tagStack.isEmpty()) {
-            // se restarem tags não fechadas, o HTML está mal-formado
-            throw new MalformedHtmlException();
-        }
-
+        if(!tagDeque.isEmpty()) throw new MalformedHtmlException();
         return deepestText;
     }
 
-    // verifica se a linha é uma tag (abertura ou fechamento)
+    private void processTagLine(String line, Deque<String> tagDeque) throws MalformedHtmlException {
+        if (isClosingTag(line)) processClosingTag(line, tagDeque);
+        else processOpeningTag(line, tagDeque);
+    }
+
+    private void processClosingTag(String line, Deque<String> tagDeque) throws MalformedHtmlException {
+        String tagName = extractTagName(line, true);
+        if (tagDeque.isEmpty() || !tagDeque.peek().equals(tagName)) throw new MalformedHtmlException();
+        tagDeque.pop();
+    }
+
+    private void processOpeningTag(String line, Deque<String> tagDeque) throws MalformedHtmlException {
+        String tagName = extractTagName(line, false);
+        if (tagName.contains(" ")) throw new MalformedHtmlException();
+        tagDeque.push(tagName);
+    }
+
+    private String updateDeepestText(String text, Deque<String> tagDeque, String currentDeepestText, int currentMaxDepth) {
+        int currentDepth = tagDeque.size();
+        if (currentDepth > currentMaxDepth) return text;
+        return currentDeepestText;
+    }
+
     private boolean isTag(String line) {
         return line.startsWith("<") && line.endsWith(">");
     }
 
-    // verifica se a linha é uma tag de fechamento
     private boolean isClosingTag(String line) {
         return line.startsWith("</");
     }
 
-    // extrai o nome da tag removendo os delimitadores
     private String extractTagName(String line, boolean closing) {
-        if (closing) {
-            // </div>
-            return line.substring(2, line.length() - 1).trim();
-        } else {
-            // <div>
-            return line.substring(1, line.length() - 1).trim();
-        }
+        return closing
+                ?  line.substring(2, line.length() - 1).trim()
+                :  line.substring(1, line.length() - 1).trim();
     }
 }
