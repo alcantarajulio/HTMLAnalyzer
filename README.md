@@ -9,8 +9,6 @@ profundo da estrutura HTML de seu conteúdo.
 # Pré-requisitos
 
 - JDK 8 ou superior
-- Acesso à internet (caso deseje buscar HTML de URLs externas)
-- Ambiente para compilação e execução de código Java (IDE, terminal, etc.)
 
 # Execução
 
