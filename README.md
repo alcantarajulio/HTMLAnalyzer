@@ -20,4 +20,3 @@ profundo da estrutura HTML de seu conteúdo.
     java HtmlAnalyzer <URL>
 ```
 
-Link para o repositório no github: https://github.com/alcantarajulio/axur-internship-test
